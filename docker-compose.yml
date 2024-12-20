@@ -1,0 +1,119 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: personal_budget_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:7000/api
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: personal_budget_backend
+    ports:
+      - "7000:7000"
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: root
+      DATABASE_NAME: personal_budget
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:14
+    container_name: personal_budget_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: personal_budget
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+
+# services:
+#   frontend:
+#     build:
+#       context: ./frontend
+#     container_name: personal_budget_frontend
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       - NEXT_PUBLIC_API_URL=http://localhost:7000/api
+#     networks:
+#       - app-network
+    
+
+#   backend:
+#     build:
+#       context: ./backend
+#     container_name: personal_budget_backend
+#     ports:
+#       - "7000:7000"
+#     environment:
+#       DATABASE_HOST: postgres
+#       DATABASE_PORT: 5432
+#       DATABASE_USERNAME: postgres
+#       DATABASE_PASSWORD: root
+#       DATABASE_NAME: personal_budget
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#     networks:
+#       - app-network
+
+#   postgres:
+#     image: postgres:14
+#     container_name: personal_budget_postgres
+#     restart: always
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: root
+#       POSTGRES_DB: personal_budget
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - app-network
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U postgres"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+
+# networks:
+#   app-network:
+#     driver: bridge
+
+# volumes:
+#   postgres_data:
+
